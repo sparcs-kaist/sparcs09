@@ -1,5 +1,5 @@
 from django.contrib import admin
-from sparcs09.apps.buy.models import Item, Option, Record
+from sparcs09.apps.buy.models import Item, Option, Record, Payment
 
 
 class ItemAdmin(admin.ModelAdmin):
@@ -15,6 +15,11 @@ class RecordAdmin(admin.ModelAdmin):
     list_display = ('user', 'option', 'num')
 
 
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('item', 'user', 'total', 'is_paid')
+
+
 admin.site.register(Item, ItemAdmin)
 admin.site.register(Option, OptionAdmin)
 admin.site.register(Record, RecordAdmin)
+admin.site.register(Payment, PaymentAdmin)

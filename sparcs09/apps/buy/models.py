@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+
 class Item(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
@@ -18,7 +19,7 @@ class Option(models.Model):
     item = models.ForeignKey(Item, related_name='options')
 
     def __unicode__(self):
-        return u'%s %s (%s KRW)' % (self.item, self.title, self.price)
+        return u'%s (%s KRW)' % (self.title, self.price)
 
 
 class Record(models.Model):
@@ -26,5 +27,18 @@ class Record(models.Model):
     option = models.ForeignKey(Option)
     num = models.IntegerField()
 
+    def cost(self):
+        return self.option.price * self.num
+
     def __unicode__(self):
-        return u'%s: %d units' % (self.option, self.num)
+        return u'%s %s: %d units' % (self.option.item, self.option, self.num)
+
+
+class Payment(models.Model):
+    item = models.ForeignKey(Item)
+    user = models.ForeignKey(User)
+    total = models.IntegerField()
+    is_paid = models.BooleanField()
+
+    def __unicode__(self):
+        return u'%s: %d for %s' % (self.user, self.total, self.item)
