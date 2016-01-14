@@ -19,7 +19,7 @@ def main(request):
     items = Item.objects.filter(is_hidden=False).order_by('-id')
     if request.user.is_authenticated():
         for item in items:
-            payment = Payment.objects.filter(item=item, user=request.user)
+            payment = Payment.objects.filter(item=item, user=request.user).first()
             item.payment = payment
 
     return render(request, 'main.html', {'items': items, 'date': timezone.now()})
@@ -50,7 +50,7 @@ def record(request):
 
     if request.user.is_authenticated:
         for item in items:
-            payment = Payment.objects.filter(item=item, user=request.user)
+            payment = Payment.objects.filter(item=item, user=request.user).first()
             item.payment = payment
 
     return render(request, 'list.html', {
