@@ -1,7 +1,17 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from sparcs09.apps.buy.models import Item, Option, Record, Payment
+
+
+def get_records(user, pid):
+    records = []
+    raw = Record.objects.filter(user=user)
+    for r in raw:
+        if r.option.item.id == pid:
+            records.append(r)
+    return records
 
 
 # /buy/
@@ -12,10 +22,7 @@ def main(request):
             payment = Payment.objects.filter(item=item, user=request.user)
             item.payment = payment
 
-    return render(request, 'main.html', {
-                    'items': items,
-                    'date': timezone.now(),
-                 })
+    return render(request, 'main.html', {'items': items, 'date': timezone.now()})
 
 
 # /buy/list/
@@ -59,19 +66,56 @@ def record(request):
 # /buy/item/<pid>/
 def item(request, pid):
     item = get_object_or_404(Item, id=pid)
+    user = request.user
 
-    if request.method == 'POST':
-        result = request.POST.get('data', '{}')
+    if request.method == 'POST' and user.is_authenticated():
+        raw_option = request.POST.getlist('option', [])
+        raw_num = request.POST.getlist('num', [])
+        if len(raw_option) != len(raw_num):
+            return HttpResponseBadRequest()
+
+        data = {}; total = 0
+        for i in range(len(raw_option)):
+            option = get_object_or_404(Option, id=raw_option[i])
+            if option.item != item:
+                continue
+
+            num = int(raw_num[i])
+            if data.has_key(option.id):
+                data[option.id] += num
+            else:
+                data[option.id] = num
+            total += option.price * num
+
+        records = get_records(user, item.id)
+        for record in records:
+            record.delete()
+
+        for k, v in data.iteritems():
+            option = Option.objects.get(id=k)
+            Record(user=user, option=option, num=v).save()
+
+        payments = Payment.objects.filter(user=user, item=item)
+        for payment in payments:
+            payment.delete()
+
+        if total > 0:
+            Payment(user=user, item=item, total=total, is_paid=False).save()
+
         return redirect('/buy/item/' + pid)
 
-    records = []
-    if request.user.is_authenticated():
-        raw = Record.objects.filter(user=request.user)
-        for r in raw:
-            if r.option.item.id == int(pid):
-                records.append(r)
 
-    return render(request, 'item.html', {'item': item, 'date': timezone.now(), 'records': records})
+    records = []; payment = None
+    if user.is_authenticated():
+        records = get_records(user, item.id)
+        payment = Payment.objects.filter(user=user, item=item).first()
+
+    return render(request, 'item.html', {
+                    'item': item,
+                    'date': timezone.now(),
+                    'records': records,
+                    'payment': payment
+                 })
 
 
 

@@ -28,7 +28,8 @@
 {% endautoescape %}
 </div>
 <div class="card-panel">
-    <form action="/buy/item/{{item.id}}" method="post">
+    <form action="/buy/item/{{item.id}}/" method="post">
+        {% csrf_token %}
         <div class="row-wrap">
             {% for record in records %}
             <div class="row data">
@@ -56,8 +57,8 @@
             {% endfor %}
         </div>
         <div class="row template" style="display:none;">
-            <div class="input-field col s6">
-                <select name="option" required>
+            <div class="input-field col s6 wrap-option">
+                <select>
                     <option value="" disabled selected data-price="0">옵션을 선택하세요</option>
                     {% for option in item.options.all %}
                     <option value="{{option.id}}" data-price="{{option.price}}">{{option}}</option>
@@ -65,8 +66,8 @@
                 </select>
                 <label>옵션</label> 
             </div>
-            <div class="input-field col s2">
-                <input class="validate" name="num" type="number" value="1" min="1" required>
+            <div class="input-field col s2 wrap-num">
+                <input class="validate" type="number" value="1" min="1">
                 <label>수량</label>
             </div>
             <div class="input-field col s3">
@@ -83,7 +84,12 @@
                 <label>총계</label>
             </div>
             <div class="input-field col s1">
-                <button class="btn-floating btn-large waves-effect waves-light right red row-add"><i class="material-icons">add</i></button>
+                <button class="btn-floating btn-large waves-effect waves-light right red row-add" type="button"><i class="material-icons">add</i></button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s12 center-align">
+                <button class="btn waves-effect waves-light" type="submit">저장! <i class="material-icons right">send</i></button>
             </div>
         </div>
     </form>
@@ -120,6 +126,8 @@ $(document).ready(function() {
         row.appendTo("div.row-wrap");
         row.removeClass("template");
         row.addClass("data");
+        row.find(".wrap-option select").attr("name", "option");
+        row.find(".wrap-num input").attr("name", "num");
         row.find("select").not(".disabled").material_select();
         row.show();
     });
