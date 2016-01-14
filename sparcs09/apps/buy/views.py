@@ -1,17 +1,7 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from sparcs09.apps.buy.models import Item, Option, Record, Payment
-
-
-def get_records(user, pid):
-    records = []
-    raw = Record.objects.filter(user=user)
-    for r in raw:
-        if r.option.item.id == pid:
-            records.append(r)
-    return records
 
 
 # /buy/
