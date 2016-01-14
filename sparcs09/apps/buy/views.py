@@ -72,12 +72,12 @@ def item(request, pid):
         raw_option = request.POST.getlist('option', [])
         raw_num = request.POST.getlist('num', [])
         if len(raw_option) != len(raw_num):
-            return HttpResponseBadRequest()
+            return redirect('/buy/item/' + pid)
 
         data = {}; total = 0
         for i in range(len(raw_option)):
-            option = get_object_or_404(Option, id=raw_option[i])
-            if option.item != item:
+            option = Option.objects.filter(id=raw_option[i]).first()
+            if not option or option.item != item:
                 continue
 
             num = int(raw_num[i])
@@ -87,7 +87,7 @@ def item(request, pid):
                 data[option.id] = num
             total += option.price * num
 
-        records = get_records(user, item.id)
+        records = Record.objects.filter(user=user, option__item__id=item.id)
         for record in records:
             record.delete()
 
@@ -107,7 +107,7 @@ def item(request, pid):
 
     records = []; payment = None
     if user.is_authenticated():
-        records = get_records(user, item.id)
+        records = Record.objects.filter(user=user, option__item__id=item.id)
         payment = Payment.objects.filter(user=user, item=item).first()
 
     return render(request, 'item.html', {
@@ -121,4 +121,23 @@ def item(request, pid):
 
 # /buy/item/<pid>/list/
 def item_total(request, pid):
-    pass
+    item = get_object_or_404(Item, id=pid)
+    user = request.user
+
+    payments = Payment.objects.filter(item=item)
+    if user.is_authenticated():
+        payment = Payment.objects.filter(user=user, item=item).first()
+
+    options = Option.objects.filter(item=item)
+    for option in options:
+        records = Record.objects.filter(option=option)
+        option.total_num = reduce(lambda num, rec: num + rec.num, records, 0) + ' KRW'
+        option.total_price = option.price * option.total_num
+
+    return render(request, 'item-total.html', {
+                    'item': item,
+                    'date': timezone.now(),
+                    'payment': payment,
+                    'payments': payments,
+                    'options': options,
+                  })
