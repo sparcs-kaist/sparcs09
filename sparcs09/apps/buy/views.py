@@ -121,7 +121,7 @@ def item_total(request, pid):
     options = Option.objects.filter(item=item)
     for option in options:
         records = Record.objects.filter(option=option)
-        option.total_num = reduce(lambda num, rec: num + rec.num, records, 0) + ' KRW'
+        option.total_num = reduce(lambda num, rec: num + rec.num, records, 0)
         option.total_price = option.price * option.total_num
 
     return render(request, 'item-total.html', {

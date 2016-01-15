@@ -35,7 +35,7 @@
             {% for payment in payments %}
             <tr {% if payment.user == user %}class="teal lighten-5"{% endif %}>
                 <td>{{payment.user}} ({{payment.user.first_name}} {{payment.user.last_name}})</td>
-                <td>{{payment.total}}</td>
+                <td>{{payment.total}} KRW</td>
                 <td><i class="material-icons">{% if payment.is_paid %}done{% else %}warning{% endif %}</i></td>
             </tr>
             {% endfor %}
@@ -57,7 +57,7 @@
             <tr>
                 <td>{{option}}</td>
                 <td>{{option.total_num}}</td>
-                <td>{{option.total_price}}</td>
+                <td>{{option.total_price}} KRW</td>
             </tr>
             {% endfor %}
         </tbody>
