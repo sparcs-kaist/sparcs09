@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
@@ -13,9 +14,11 @@ def login(request):
         return redirect('/')
 
     request.session['next'] = request.META.get('HTTP_REFERER', '/')
-    return redirect('https://sso.sparcs.org/oauth/require/?url=' + \
-                    request.build_absolute_uri('/session/callback/'))
-
+    url = 'https://sso.sparcs.org/oauth/require/?app=sparcs09'
+    if settings.DEBUG:
+        url = 'https://sso.sparcs.org/oauth/require/?url=' + \
+           request.build_absolute_uri('/session/callback/')
+    return redirect(url)
 
 # /session/callback/
 def callback(request):

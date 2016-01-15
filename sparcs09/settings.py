@@ -20,12 +20,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'v2*o+^)9yp#3up@2ct$s8hpbms%jy0$i^s2&np#(skybe0f6-t'
+with open(os.path.join(BASE_DIR, 'keys/django_secret')) as f:
+    SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['09.sparcs.org', '143.248.234.129']
 
 
 # Application definition
@@ -84,16 +85,23 @@ LOGOUT_URL = '/session/logout/'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'sparcs09',
+        'USER': 'sparcs09',
+        'PASSWORD': 'DUMMY',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
+
+with open(os.path.join(BASE_DIR, 'keys/db_pw')) as f:
+    DATABASES['default']['PASSWORD'] = f.read().strip()
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-KR'
 
 TIME_ZONE = 'Asia/Seoul'
 

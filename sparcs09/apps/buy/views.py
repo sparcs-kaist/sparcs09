@@ -58,7 +58,8 @@ def item(request, pid):
     item = get_object_or_404(Item, id=pid)
     user = request.user
 
-    if request.method == 'POST' and user.is_authenticated():
+    if request.method == 'POST' and user.is_authenticated() and \
+            item.valid_from < timezone.now() and timezone.now() < item.valid_to:
         raw_option = request.POST.getlist('option', [])
         raw_num = request.POST.getlist('num', [])
         if len(raw_option) != len(raw_num):

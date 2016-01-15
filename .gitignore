@@ -2,5 +2,6 @@
 *.sqlite3
 *.old
 
+reset
 media/
-
+keys/
