@@ -38,7 +38,7 @@ def record(request):
     if end > paginator.num_pages:
         end = paginator.num_pages
 
-    if request.user.is_authenticated:
+    if request.user.is_authenticated():
         for item in items:
             payment = Payment.objects.filter(item=item, user=request.user).first()
             item.payment = payment
@@ -115,6 +115,7 @@ def item_total(request, pid):
     item = get_object_or_404(Item, id=pid)
     user = request.user
 
+    payment = None
     payments = Payment.objects.filter(item=item)
     if user.is_authenticated():
         payment = Payment.objects.filter(user=user, item=item).first()
