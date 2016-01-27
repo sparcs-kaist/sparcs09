@@ -3,9 +3,15 @@ from django.contrib import auth
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.http import HttpResponseForbidden, JsonResponse
+from sparcs09.apps.session.sparcssso import Client
 import json
 import urllib
 import random
+
+
+sso_client = Client(app_name='sparcs09', secret_key=settings.SSO_KEY)
+if settings.DEBUG:
+    sso_client = Client(is_test=True)
 
 
 # /session/login/
@@ -14,18 +20,14 @@ def login(request):
         return redirect('/')
 
     request.session['next'] = request.META.get('HTTP_REFERER', '/')
-    url = 'https://sso.sparcs.org/api/token/require/?app=sparcs09'
-    if settings.DEBUG:
-        url = 'https://sso.sparcs.org/api/token/require/?url=' + \
-           request.build_absolute_uri('/session/callback/')
-    return redirect(url)
+    callback_url = request.build_absolute_uri('/session/callback/')
+    return redirect(sso_client.get_login_url(callback_url))
+
 
 # /session/callback/
 def callback(request):
     tokenid = request.GET.get('tokenid', '')
-
-    profile = urllib.urlopen('https://sso.sparcs.org/api/token/info/?tokenid=' + tokenid)
-    profile = json.load(profile)
+    profile = sso_client.get_user_info(tokenid)
 
     username = profile['sparcs_id']
     if not username:

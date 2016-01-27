@@ -23,6 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 with open(os.path.join(BASE_DIR, 'keys/django_secret')) as f:
     SECRET_KEY = f.read().strip()
 
+with open(os.path.join(BASE_DIR, 'keys/sso_secret')) as f:
+    SSO_KEY = f.read().strip()
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
