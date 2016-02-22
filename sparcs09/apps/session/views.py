@@ -1,11 +1,10 @@
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.models import User
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.http import HttpResponseForbidden, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from sparcs09.apps.session.sparcssso import Client
-import json
-import urllib
 import random
 
 
@@ -61,5 +60,6 @@ def logout(request):
 
 
 # /session/unregister/
+@csrf_exempt
 def unregister(request):
-    return JsonResponse({"status": 0})
+    return JsonResponse({"status": "1", "msg": "In order to keep logs, you cannot unregister SPARCS09"})
