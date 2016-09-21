@@ -2,15 +2,13 @@ from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from sparcs09.apps.session.sparcssso import Client
+from sparcs09.apps.session.sparcsssov2 import Client
 import random
 
 
-sso_client = Client(app_name='sparcs09', secret_key=settings.SSO_KEY)
-if settings.DEBUG:
-    sso_client = Client(is_test=True)
+sso_client = Client(settings.SSO_ID, settings.SSO_KEY)
 
 
 # /session/login/
@@ -19,14 +17,22 @@ def login(request):
         return redirect('/')
 
     request.session['next'] = request.META.get('HTTP_REFERER', '/')
-    callback_url = request.build_absolute_uri('/session/callback/')
-    return redirect(sso_client.get_login_url(callback_url))
+
+    login_url, state = sso_client.get_login_params()
+    request.session['sso_state'] = state
+    return redirect(login_url)
 
 
 # /session/callback/
 def callback(request):
-    tokenid = request.GET.get('tokenid', '')
-    profile = sso_client.get_user_info(tokenid)
+    state_before = request.session['sso_state']
+    state = request.GET.get('state', '')
+
+    if state != state_before:
+        return HttpResponseForbidden()
+
+    code = request.GET.get('code', '')
+    profile = sso_client.get_user_info(code)
 
     username = profile['sparcs_id']
     if not username:
@@ -60,6 +66,5 @@ def logout(request):
 
 
 # /session/unregister/
-@csrf_exempt
 def unregister(request):
-    return JsonResponse({"status": "1", "msg": "In order to keep logs, you cannot unregister SPARCS09"})
+    return HttpResponse('<script>alert("You cannot unregister SPARCS 09 to save logs"); window.history.back();</script>')

@@ -23,13 +23,20 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 with open(os.path.join(BASE_DIR, 'keys/django_secret')) as f:
     SECRET_KEY = f.read().strip()
 
+
+with open(os.path.join(BASE_DIR, 'keys/sso_id')) as f:
+    SSO_ID = f.read().strip()
+
+
 with open(os.path.join(BASE_DIR, 'keys/sso_secret')) as f:
     SSO_KEY = f.read().strip()
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
 
-ALLOWED_HOSTS = ['09.sparcs.org', '143.248.234.129']
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = not os.path.isfile(os.path.join(BASE_DIR, 'deploy'))
+
+
+ALLOWED_HOSTS = ['09.sparcs.org', ] if not DEBUG else []
 
 
 # Application definition
@@ -86,19 +93,26 @@ LOGOUT_URL = '/session/logout/'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sparcs09',
-        'USER': 'sparcs09',
-        'PASSWORD': 'DUMMY',
-        'HOST': 'localhost',
-        'PORT': '3306',
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
-
-with open(os.path.join(BASE_DIR, 'keys/db_pw')) as f:
-    DATABASES['default']['PASSWORD'] = f.read().strip()
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'sparcs09',
+            'USER': 'sparcs09',
+            'PASSWORD': 'DUMMY',
+            'HOST': 'localhost',
+            'PORT': '3306',
+        }
+    }
+    with open(os.path.join(BASE_DIR, 'keys/db_pw')) as f:
+        DATABASES['default']['PASSWORD'] = f.read().strip()
 
 
 # Internationalization
