@@ -36,7 +36,7 @@
                 <div class="input-field col s6">
                     <select name="option" required>
                         <option value="" disabled data-price="0">옵션을 선택하세요</option>
-                        {% for option in item.options.all %}
+                        {% for option in options %}
                         <option value="{{option.id}}" data-price="{{option.price}}" {% if option.id == record.option.id %}selected{% endif %}>{{option}}</option>
                         {% endfor %}
                     </select>

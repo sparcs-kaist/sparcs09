@@ -96,6 +96,7 @@ def item(request, pid):
         return redirect('/buy/item/' + pid)
 
 
+    options = item.options.order_by('title')
     records = []; payment = None
     if user.is_authenticated():
         records = Record.objects.filter(user=user, option__item__id=item.id)
@@ -103,6 +104,7 @@ def item(request, pid):
 
     return render(request, 'item.html', {
                     'item': item,
+                    'options': options,
                     'date': timezone.now(),
                     'records': records,
                     'payment': payment
@@ -120,7 +122,7 @@ def item_total(request, pid):
     if user.is_authenticated():
         payment = Payment.objects.filter(user=user, item=item).first()
 
-    options = Option.objects.filter(item=item)
+    options = Option.objects.filter(item=item).order_by('title')
     for option in options:
         records = Record.objects.filter(option=option)
         option.total_num = reduce(lambda num, rec: num + rec.num, records, 0)
