@@ -20,23 +20,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-with open(os.path.join(BASE_DIR, 'keys/django_secret')) as f:
-    SECRET_KEY = f.read().strip()
-
-
-with open(os.path.join(BASE_DIR, 'keys/sso_id')) as f:
-    SSO_ID = f.read().strip()
-
-
-with open(os.path.join(BASE_DIR, 'keys/sso_secret')) as f:
-    SSO_KEY = f.read().strip()
+SECRET_KEY = "12jevx+e@f$vo6!7!o_6xdm3ell48%6g#4_rmj1b-d*$dim&kg"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = not os.path.isfile(os.path.join(BASE_DIR, 'deploy'))
+DEBUG = True
 
-
-ALLOWED_HOSTS = ['09.sparcs.org', ] if not DEBUG else []
+ALLOWED_HOSTS = [
+    '09.sparcs.org',
+]
 
 
 # Application definition
@@ -48,8 +40,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'sparcs09.apps.session',
-    'sparcs09.apps.buy',
+    'apps.session',
+    'apps.buy',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -93,27 +85,18 @@ LOGOUT_URL = '/session/logout/'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'sparcs09',
-            'USER': 'sparcs09',
-            'PASSWORD': 'DUMMY',
-            'HOST': 'localhost',
-            'PORT': '3306',
-        }
-    }
-    with open(os.path.join(BASE_DIR, 'keys/db_pw')) as f:
-        DATABASES['default']['PASSWORD'] = f.read().strip()
+}
 
+
+# SPARCS SSO
+
+SSO_ID = ""
+SSO_KEY = ""
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -139,3 +122,9 @@ STATICFILES_DIRS = (
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+try:
+    from .local_settings import *
+except:
+    pass

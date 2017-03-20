@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.http import HttpResponseForbidden, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from sparcs09.apps.session.sparcsssov2 import Client
+from apps.session.sparcsssov2 import Client
 import random
 
 

@@ -1,6 +1,6 @@
 from django.conf.urls import include, url
 from django.contrib import admin
-from sparcs09.apps.buy import views
+from apps.buy import views
 
 urlpatterns = [
     url('^$', views.main),

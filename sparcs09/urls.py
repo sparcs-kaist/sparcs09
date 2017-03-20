@@ -22,8 +22,8 @@ from django.http import HttpResponseRedirect
 urlpatterns = [
     url(r'^$', lambda x: HttpResponseRedirect('buy/')),
 
-    url(r'^session/', include('sparcs09.apps.session.urls')),
-    url(r'^buy/', include('sparcs09.apps.buy.urls')),
+    url(r'^session/', include('apps.session.urls')),
+    url(r'^buy/', include('apps.buy.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
 ]

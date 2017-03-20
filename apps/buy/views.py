@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
-from sparcs09.apps.buy.models import Item, Option, Record, Payment
+from apps.buy.models import Item, Option, Record, Payment
 
 
 # /buy/

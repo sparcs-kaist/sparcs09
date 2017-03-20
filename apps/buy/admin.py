@@ -1,5 +1,5 @@
 from django.contrib import admin
-from sparcs09.apps.buy.models import Item, Option, Record, Payment
+from apps.buy.models import Item, Option, Record, Payment
 
 
 class ItemAdmin(admin.ModelAdmin):

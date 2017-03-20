@@ -2,8 +2,7 @@
 *.sqlite3
 *.old
 
-reset
 media/
-keys/
+venv/
 
-deploy
+local_settings.py
