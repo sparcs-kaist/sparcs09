@@ -1,18 +1,24 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
+from functools import reduce
 from apps.buy.models import Item, Option, Record, Payment
 
 
 # /buy/
 def main(request):
     items = Item.objects.filter(is_hidden=False).order_by('-id')
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         for item in items:
-            payment = Payment.objects.filter(item=item, user=request.user).first()
+            payment = Payment.objects.filter(
+                item=item, user=request.user
+            ).first()
             item.payment = payment
 
-    return render(request, 'main.html', {'items': items, 'date': timezone.now()})
+    return render(request, 'main.html', {
+        'items': items,
+        'date': timezone.now()
+    })
 
 
 # /buy/list/
@@ -38,9 +44,11 @@ def record(request):
     if end > paginator.num_pages:
         end = paginator.num_pages
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         for item in items:
-            payment = Payment.objects.filter(item=item, user=request.user).first()
+            payment = Payment.objects.filter(
+                item=item, user=request.user
+            ).first()
             item.payment = payment
 
     return render(request, 'list.html', {
@@ -58,21 +66,22 @@ def item(request, pid):
     item = get_object_or_404(Item, id=pid)
     user = request.user
 
-    if request.method == 'POST' and user.is_authenticated() and \
-            item.valid_from < timezone.now() and timezone.now() < item.valid_to:
+    if (request.method == 'POST' and user.is_authenticated and
+            item.valid_from < timezone.now() < item.valid_to):
         raw_option = request.POST.getlist('option', [])
         raw_num = request.POST.getlist('num', [])
         if len(raw_option) != len(raw_num):
             return redirect('/buy/item/' + pid)
 
-        data = {}; total = 0
+        data = {}
+        total = 0
         for i in range(len(raw_option)):
             option = Option.objects.filter(id=raw_option[i]).first()
             if not option or option.item != item:
                 continue
 
             num = int(raw_num[i])
-            if data.has_key(option.id):
+            if option.id in data:
                 data[option.id] += num
             else:
                 data[option.id] = num
@@ -82,7 +91,7 @@ def item(request, pid):
         for record in records:
             record.delete()
 
-        for k, v in data.iteritems():
+        for k, v in data.items():
             option = Option.objects.get(id=k)
             Record(user=user, option=option, num=v).save()
 
@@ -95,21 +104,20 @@ def item(request, pid):
 
         return redirect('/buy/item/' + pid)
 
-
     options = item.options.order_by('title')
-    records = []; payment = None
-    if user.is_authenticated():
+    records = []
+    payment = None
+    if user.is_authenticated:
         records = Record.objects.filter(user=user, option__item__id=item.id)
         payment = Payment.objects.filter(user=user, item=item).first()
 
     return render(request, 'item.html', {
-                    'item': item,
-                    'options': options,
-                    'date': timezone.now(),
-                    'records': records,
-                    'payment': payment
-                 })
-
+        'item': item,
+        'options': options,
+        'date': timezone.now(),
+        'records': records,
+        'payment': payment,
+    })
 
 
 # /buy/item/<pid>/list/
@@ -119,7 +127,7 @@ def item_total(request, pid):
 
     payment = None
     payments = Payment.objects.filter(item=item)
-    if user.is_authenticated():
+    if user.is_authenticated:
         payment = Payment.objects.filter(user=user, item=item).first()
 
     options = Option.objects.filter(item=item).order_by('title')
@@ -129,9 +137,9 @@ def item_total(request, pid):
         option.total_price = option.price * option.total_num
 
     return render(request, 'item-total.html', {
-                    'item': item,
-                    'date': timezone.now(),
-                    'payment': payment,
-                    'payments': payments,
-                    'options': options,
-                  })
+        'item': item,
+        'date': timezone.now(),
+        'payment': payment,
+        'payments': payments,
+        'options': options,
+    })

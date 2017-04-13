@@ -3,7 +3,6 @@ from django.contrib import auth
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.http import HttpResponseForbidden, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from apps.session.sparcsssov2 import Client
 import random
 
@@ -13,7 +12,7 @@ sso_client = Client(settings.SSO_ID, settings.SSO_KEY)
 
 # /session/login/
 def login(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return redirect('/')
 
     request.session['next'] = request.META.get('HTTP_REFERER', '/')
@@ -58,7 +57,7 @@ def callback(request):
 
 # /session/logout/
 def logout(request):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return redirect('/')
 
     auth.logout(request)
@@ -67,4 +66,10 @@ def logout(request):
 
 # /session/unregister/
 def unregister(request):
-    return HttpResponse('<script>alert("You cannot unregister SPARCS 09 to save logs"); window.history.back();</script>')
+    sso_unregister_msg = """
+    <script>
+        alert("You cannot unregister SPARCS 09 to save logs");
+        window.history.back();
+    </script>
+    """
+    return HttpResponse(sso_unregister_msg)
