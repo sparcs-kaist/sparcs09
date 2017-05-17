@@ -123,6 +123,35 @@ STATICFILES_DIRS = (
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Addmins & Logging
+TEAM_EMAILS = ['sparcs09@sparcs.org', ]
+
+ADMINS = (('SPARCS09 SYSOP', 'sparcs09.sysop@sparcs.org'),)
+
+LOG_FILE = os.path.join(BASE_DIR, 'archive/logs.txt')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'apps.logger.DBHandler',
+        },
+        'mail': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
+    },
+    'loggers': {
+        'sparcs09': {
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
+    },
+}
+
 
 try:
     from .local_settings import *

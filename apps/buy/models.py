@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.timezone import localtime
 
 
 class Item(models.Model):
@@ -43,3 +44,39 @@ class Payment(models.Model):
 
     def __str__(self):
         return u'%s: %d for %s' % (self.user, self.total, self.item)
+
+
+class UserLog(models.Model):
+    """
+    denotes single log for an user or global event
+    - user:  user object
+    - level: level of log; python log level
+    - time:  event time
+    - ip:    event ip
+    - group: log group
+    - text:  detail log message
+    - is_hidden:  hide log in user log page
+    """
+    GROUP_ACCOUNT = 'sparcs09.account'
+    GROUPS = [
+        (GROUP_ACCOUNT, GROUP_ACCOUNT),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='logs', blank=True, null=True)
+    level = models.IntegerField()
+    time = models.DateTimeField(auto_now=True)
+    ip = models.GenericIPAddressField()
+    group = models.CharField(max_length=100, choices=GROUPS)
+    text = models.CharField(max_length=500)
+    is_hidden = models.BooleanField(default=False)
+
+    def pretty(self):
+        username = self.user.username if self.user else 'undefined'
+        time_str = localtime(self.time).isoformat()
+        return (f'{username}/{time_str} ({self.level}, {self.ip}) '
+                '{self.group}.{self.text}')
+
+    def __str__(self):
+        time_str = localtime(self.time).isoformat()
+        return (f'{time_str}/{self.level} ({self.user}) '
+                '{self.group}.{self.text}')
