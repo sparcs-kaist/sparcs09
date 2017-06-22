@@ -1,0 +1,6 @@
+[flake8]
+exclude =
+    __pycache__,
+    apps/core/migrations,
+application-import-names = apps
+import-order-style = edited
