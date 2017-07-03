@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'apps.core',
     'apps.session',
 ]
@@ -93,7 +94,7 @@ AUTH_PASSWORD_VALIDATORS = []
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'ko-kr'
+LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Seoul'
 
@@ -110,7 +111,21 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
+# Rest Framework Settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
+
+
+# SPARCS SSO Settings
+SSO_ID = ''
+SSO_KEY = ''
+
+
 # Local Settings
+
 try:
     from .local_settings import * # noqa: F401, F403
 except ImportError:
