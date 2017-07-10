@@ -1,8 +1,14 @@
+import logging
+
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.response import Response
 
+from apps.core.models import UserLog
 from apps.session.serializers import UserSerializer
+
+
+logger = logging.getLogger(UserLog.GROUP_ACCOUNT)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -32,6 +38,12 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = UserSerializer(
             user, show_private=request.user.username == sid,
         )
+
+        logger.info('search', {
+            'r': request,
+            'extra': {'sid': sid},
+        })
+
         return Response({
             'user': serializer.data,
         })
@@ -62,6 +74,12 @@ class UserViewSet(viewsets.ModelViewSet):
             }, status=400)
 
         serializer.save()
+
+        logger.info('update', {
+            'r': request,
+            'extra': {'sid': sid, **request.data},
+        })
+
         return Response({
             'user': serializer.data,
         })

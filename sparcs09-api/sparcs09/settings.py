@@ -124,6 +124,35 @@ SSO_ID = ''
 SSO_KEY = ''
 
 
+# Admins & Logging
+ADMINS = (('SPARCS09 SYSOP', '09.sysop@sparcs.org'),)
+
+LOG_DIR = os.path.join(BASE_DIR, 'archive/logs/')
+
+LOG_BUFFER_DIR = os.path.join(BASE_DIR, 'archive/buffer/')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'apps.logger.SPARCS09LogHandler',
+        },
+        'mail': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
+    },
+    'loggers': {
+        'sparcs09': {
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
+    },
+}
+
 # Local Settings
 
 try:

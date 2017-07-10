@@ -106,5 +106,6 @@ ENV/
 # db
 *.sqlite3
 
-# log dir
-archive/
+# logs and stamps
+*.log
+*.stamp

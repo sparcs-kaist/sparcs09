@@ -1,3 +1,4 @@
+import logging
 import re
 
 from django.conf import settings
@@ -6,11 +7,13 @@ from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 
+from apps.core.models import UserLog
 from apps.session.models import UserProfile
 from apps.session.serializers import UserSerializer
 from apps.session.sparcsssov2 import Client
 
 
+logger = logging.getLogger(UserLog.GROUP_ACCOUNT)
 sso_client = Client(settings.SSO_ID, settings.SSO_KEY)
 
 
@@ -46,19 +49,32 @@ class SessionViewSet(viewsets.ViewSet):
             name = user_info['first_name'] + user_info['last_name']
             user = User.objects.create_user(
                 username=sid,
+                email=email,
                 last_name=name,
             )
             profile = UserProfile(user=user)
             profile.save()
+            user.save()
 
-        # update email at every login
-        user.email = email
-        user.save()
+            logger.info('create', {
+                'r': request,
+                'uid': user.username,
+                'extra': {
+                    'email': email,
+                    'name': name,
+                },
+            })
+        else:
+            # update email at every login
+            user.email = email
+            user.save()
 
         # issue a token
         token = Token.objects.get_or_create(user=user)
-
         serializer = UserSerializer(user, show_private=True)
+
+        logger.info('login', {'r': request, 'uid': user.username})
+
         return Response({
             'token': token[0].key,
             'user': serializer.data,
@@ -80,6 +96,12 @@ class SessionViewSet(viewsets.ViewSet):
         redirect_uri = request.data.get('redirect_uri', main_uri)
         if not redirect_uri.startswith(main_uri):
             redirect_uri = main_uri
+
+        logger.info('logout', {
+            'r': request,
+            'uid': sid,
+            'extra': {'redirect_uri': redirect_uri},
+        })
 
         return Response({
             'logout_url': sso_client.get_logout_url(sid, redirect_uri),

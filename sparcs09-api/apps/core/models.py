@@ -68,7 +68,7 @@ class OptionItem(models.Model):
 class Record(models.Model):
     participant = models.ForeignKey(User, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    options= models.ManyToManyField(OptionItem)
+    options = models.ManyToManyField(OptionItem)
     quantity = models.IntegerField()
 
     def cost(self):
