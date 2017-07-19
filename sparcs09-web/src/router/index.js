@@ -1,15 +1,20 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Hello from '@/components/Hello';
+import auth from '../pages/auth';
+import error from '../pages/error';
 
 Vue.use(Router);
 
 export default new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
-      name: 'Hello',
+      name: 'Home',
       component: Hello,
     },
+    ...auth,
+    ...error,
   ],
 });
