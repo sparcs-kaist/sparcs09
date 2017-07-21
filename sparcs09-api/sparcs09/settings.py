@@ -25,7 +25,10 @@ SECRET_KEY = 'dz4o!^p(6#ogf4s9ar$n67#v=5jrov)q=iw5gg2!(4^)$j_%we'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+]
 
 
 # Application definition
@@ -120,8 +123,8 @@ REST_FRAMEWORK = {
 
 
 # SPARCS SSO Settings
-SSO_ID = ''
-SSO_KEY = ''
+SSO_ID = 'test248927381163'
+SSO_KEY = '2f919e4b1d7239b4ce72'
 
 
 # Admins & Logging
