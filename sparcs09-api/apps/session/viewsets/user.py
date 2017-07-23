@@ -66,7 +66,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 'detail': 'Updating others profile is forbidden.',
             }, status=403)
 
-        serializer = UserSerializer(user, data=request.data, show_private=True)
+        serializer = UserSerializer(
+            user, data=request.data, show_private=True, partial=True,
+        )
         if not serializer.is_valid():
             return Response({
                 'detail': 'Not valid data.',
