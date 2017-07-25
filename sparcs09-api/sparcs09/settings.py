@@ -123,8 +123,8 @@ REST_FRAMEWORK = {
 
 
 # SPARCS SSO Settings
-SSO_ID = 'test248927381163'
-SSO_KEY = '2f919e4b1d7239b4ce72'
+SSO_ID = 'test08e7cfee1d52da64'
+SSO_KEY = '18d0532da608d1e8d951'
 
 
 # Admins & Logging
