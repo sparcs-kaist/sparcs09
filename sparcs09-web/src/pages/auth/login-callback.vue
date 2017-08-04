@@ -11,7 +11,11 @@ function loginCallback() {
   this.authWithSsoToken({ code: this.code }).then(() => {
     setToken(this.token);
     setSid(this.user.sid);
-    this.$router.push('/');
+    if (this.terms_agreed) {
+      this.$router.push('/');
+    } else {
+      this.$router.push('/auth/signup');
+    }
   });
 }
 
@@ -38,6 +42,7 @@ export default {
     ...mapGetters({
       token: types.AUTH_GET_TOKEN,
       user: types.USER_GET_USER,
+      terms_agreed: types.USER_IS_TERMS_AGREED,
     }),
   },
 
@@ -47,6 +52,6 @@ export default {
     }),
   },
 
-  mounted: loginCallback,
+  beforeMount: loginCallback,
 };
 </script>

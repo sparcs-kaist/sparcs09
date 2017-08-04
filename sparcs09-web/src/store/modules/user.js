@@ -9,6 +9,12 @@ export default {
 
   getters: {
     [types.USER_GET_USER]: state => state.user,
+    [types.USER_IS_TERMS_AGREED]: (state) => {
+      if (state.user) {
+        return state.user.terms_agreed;
+      }
+      return false;
+    },
   },
 
   mutations: {
@@ -30,7 +36,25 @@ export default {
       return new Promise((resolve, reject) => {
         client.request({
           method: 'get',
-          url: `users/${payload.sid}`,
+          url: `users/${payload.sid}/`,
+        }).then((response) => {
+          commit(types.USER_SET_USER, { user: response.data.user });
+          resolve();
+        }).catch(err => reject(err));
+      });
+    },
+
+    /*
+     * payload
+     *  - sid: sid for spark09 user
+     *  - user: new user info
+     */
+    [types.USER_PATCH_USER_WITH_SID]({ commit }, payload) {
+      return new Promise((resolve, reject) => {
+        client.request({
+          method: 'patch',
+          url: `users/${payload.sid}/`,
+          data: payload.user,
         }).then((response) => {
           commit(types.USER_SET_USER, { user: response.data.user });
           resolve();

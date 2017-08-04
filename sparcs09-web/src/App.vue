@@ -1,29 +1,39 @@
 <template>
   <div id="app">
-    <nav-bar :is-authenticated="isAuthenticated"/>
+    <nav-bar :is-authenticated="isAuthenticated" :user-name="loggedUser && loggedUser.name"/>
     <router-view></router-view>
   </div>
 </template>
 
 <script>
 /* eslint-disable object-shorthand */
-
 import { mapGetters, mapMutations, mapActions } from 'vuex';
 import NavBar from '@/components/NavBar';
-import { getToken, getSid } from './utils/sparcs-sso';
+import { getToken, getSid, resetToken } from './utils/sparcs-sso';
 import client from './utils/api-client';
 import * as types from './store/types';
 
 function appInitCallback() {
-  const token = getToken();
-  const sid = getSid();
-  // check user already logged in..
-  if (!!token && !!sid) {
-    this.setToken({ token: token });
+  return new Promise((resolve) => {
+    const token = getToken();
+    const sid = getSid();
     client.setToken(token);
-    this.getUserWithSid({ sid: sid }).then(() => {
-    }).catch(() => {});
-  }
+    this.setToken({ token: token });
+    if (!!token && !!sid) {
+      this.getUserWithSid({
+        sid: sid,
+      }).then(() => {
+        resolve();
+      }).catch(() => {
+        resetToken();
+        this.setToken({ token: null });
+        client.setToken(null);
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
 }
 
 export default {
@@ -35,7 +45,8 @@ export default {
 
   computed: {
     ...mapGetters({
-      isAuthenticated: types.AUTH_IS_AUTHENTICATED,
+      isAuthenticated: types.IS_AUTHENTICATED,
+      loggedUser: types.USER_GET_USER,
     }),
   },
 

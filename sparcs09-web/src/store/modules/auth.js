@@ -8,7 +8,7 @@ export default {
   },
 
   getters: {
-    [types.AUTH_IS_AUTHENTICATED]: state => !!state.token,
+    [types.AUTH_IS_TOKEN_EXISTS]: state => !!state.token,
     [types.AUTH_GET_TOKEN]: state => state.token,
   },
 

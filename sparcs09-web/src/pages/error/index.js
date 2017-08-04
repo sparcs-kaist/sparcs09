@@ -1,5 +1,5 @@
-import ErrorPage from '@/pages/error/ErrorPage';
-import PageNotFound from '@/pages/error/PageNotFound';
+import ErrorPage from '@/pages/error/error-page';
+import PageNotFound from '@/pages/error/page-not-found';
 
 export default [
   {
