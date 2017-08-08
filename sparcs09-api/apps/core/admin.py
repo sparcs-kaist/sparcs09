@@ -11,7 +11,7 @@ class ItemAdmin(admin.ModelAdmin):
 
 
 class ContentAdmin(admin.ModelAdmin):
-    list_display = ('item', 'order', 'type', 'content', 'image', 'link')
+    list_display = ('item', 'order', 'kind', 'content', 'image', 'link')
     list_filter = ('is_hidden', )
 
 
