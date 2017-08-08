@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from apps.core.models import UserLog
 from apps.session.models import UserProfile
-from apps.session.serializers import UserSerializer
+from apps.session.serializers import UserFullSerializer
 from apps.session.sparcsssov2 import Client
 
 
@@ -71,7 +71,7 @@ class SessionViewSet(viewsets.ViewSet):
 
         # issue a token
         token = Token.objects.get_or_create(user=user)
-        serializer = UserSerializer(user, show_private=True)
+        serializer = UserFullSerializer(user)
 
         logger.info('login', {'r': request, 'uid': user.username})
 

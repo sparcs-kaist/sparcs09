@@ -7,7 +7,9 @@ from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
 from apps.core.models import UserLog
-from apps.session.serializers import UserSerializer
+from apps.session.serializers import (
+    UserFullSerializer, UserProfileUpdateSerializer, UserPublicSerializer,
+)
 from apps.session.sparcsssov2 import Client
 
 
@@ -39,9 +41,11 @@ class UserViewSet(viewsets.ViewSet):
                 'detail': 'No such user.',
             }, status=404)
 
-        serializer = UserSerializer(
-            user, show_private=request.user.username == sid,
-        )
+        serializer_class = UserPublicSerializer
+        if request.user.username == sid:
+            serializer_class = UserFullSerializer
+
+        serializer = serializer_class(user)
 
         logger.info('search', {
             'r': request,
@@ -70,8 +74,8 @@ class UserViewSet(viewsets.ViewSet):
                 'detail': 'Updating others profile is forbidden.',
             }, status=403)
 
-        serializer = UserSerializer(
-            user, data=request.data, show_private=True, partial=True,
+        serializer = UserProfileUpdateSerializer(
+            user.profile, data=request.data, partial=True,
         )
         if not serializer.is_valid():
             return Response({
