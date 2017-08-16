@@ -1,0 +1,9 @@
+from rest_framework import serializers
+
+from apps.core.models import Item
+
+
+class ItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = '__all__'

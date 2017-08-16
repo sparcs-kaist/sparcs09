@@ -16,9 +16,11 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from apps.core.router import router as router_core
 from apps.session.router import router as router_session
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^api/', include(router_core.urls)),
     url(r'^api/', include(router_session.urls)),
 ]

@@ -1,6 +1,8 @@
 [flake8]
 exclude =
+    venv,
     __pycache__,
     apps/core/migrations,
+    apps/session/migrations,
 application-import-names = apps
 import-order-style = edited

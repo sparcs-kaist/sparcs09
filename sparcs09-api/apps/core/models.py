@@ -191,8 +191,12 @@ class UserLog(models.Model):
         is_hidden: the hidden flag - hide from users iff true
     """
     GROUP_ACCOUNT = 'sparcs09.account'
+    GROUP_COMMENT = 'sparcs09.comment'
+    GROUP_ITEM = 'sparcs09.item'
     GROUP_CHOICES = [
         (GROUP_ACCOUNT, GROUP_ACCOUNT),
+        (GROUP_COMMENT, GROUP_COMMENT),
+        (GROUP_ITEM, GROUP_ITEM),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              related_name='user_logs', blank=True, null=True)

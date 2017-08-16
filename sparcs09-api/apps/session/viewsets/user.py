@@ -46,12 +46,6 @@ class UserViewSet(viewsets.ViewSet):
             serializer_class = UserFullSerializer
 
         serializer = serializer_class(user)
-
-        logger.info('search', {
-            'r': request,
-            'extra': {'sid': sid},
-        })
-
         return Response({
             'user': serializer.data,
         })
@@ -89,7 +83,6 @@ class UserViewSet(viewsets.ViewSet):
             'r': request,
             'extra': {'sid': sid, **request.data},
         })
-
         return Response({
             'user': serializer.data,
         })
@@ -131,6 +124,11 @@ class UserViewSet(viewsets.ViewSet):
             })
 
         user.delete()
+
+        logger.info('delete', {
+            'r': request,
+            'extra': {'sid': sid},
+        })
         return Response({
             'success': True,
         })
