@@ -63,7 +63,7 @@ class Content(models.Model):
         (CONTENT_TYPE_IMAGE, 'Image'),
         (CONTENT_TYPE_VIDEO, 'Video'),
     )
-    item = models.ForeignKey(Item, related_name='contents',
+    item = models.ForeignKey('Item', related_name='contents',
                              on_delete=models.CASCADE)
     order = models.IntegerField()
     kind = models.IntegerField(choices=CONTENT_TYPE_CHOICES)
@@ -86,7 +86,7 @@ class Comment(models.Model):
         is_deleted: the deleted flag
     """
 
-    item = models.ForeignKey(Item, related_name='comments',
+    item = models.ForeignKey('Item', related_name='comments',
                              on_delete=models.CASCADE)
     content = models.TextField()
     writer = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -100,11 +100,13 @@ class OptionCategory(models.Model):
 
     Attributes:
         name: the name of the option category
-        item: the item that this OptionCategory belongs to
+        item: the item that this option category belongs to
+        required: flag whether this category selection is required or not
     """
     name = models.CharField(max_length=100)
-    item = models.ForeignKey(Item, related_name='option_categories',
+    item = models.ForeignKey('Item', related_name='option_categories',
                              on_delete=models.CASCADE)
+    required = models.BooleanField(default=True)
 
 
 class OptionItem(models.Model):
@@ -119,23 +121,22 @@ class OptionItem(models.Model):
 
     name = models.CharField(max_length=100)
     price_delta = models.IntegerField(default=0)
-    category = models.ForeignKey(OptionCategory, related_name='option_items',
+    category = models.ForeignKey('OptionCategory', related_name='option_items',
                                  on_delete=models.CASCADE)
 
 
 class Record(models.Model):
     """
-    Represents a participation record for an user + a 09 item + an option.
+    Represents a participation record for a payment + an option.
 
     Attributes:
-        participant: the participated user
-        item: the item that the user has been participated
+        payment: the payment that this record belongs to
         options: list of option item that the user was selected - they should
                  be selected exactly one in each option categories of the item
         quantity: the quantity for the fixed options
     """
-    participant = models.ForeignKey(User, on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    payment = models.ForeignKey('Payment', related_name='records',
+                                on_delete=models.CASCADE)
     options = models.ManyToManyField(OptionItem)
     quantity = models.IntegerField()
 
@@ -167,7 +168,7 @@ class Payment(models.Model):
         (STATUS_PAID, 'Paid'),
         (STATUS_CONFIRMED, 'Confirmed'),
     )
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
     participant = models.ForeignKey(User, on_delete=models.CASCADE)
     total = models.IntegerField()
     status = models.IntegerField(choices=STATUS_CHOICES)
