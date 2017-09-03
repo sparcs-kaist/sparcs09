@@ -7,34 +7,9 @@
 
 <script>
 /* eslint-disable object-shorthand */
-import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { mapGetters } from 'vuex';
 import NavBar from '@/components/NavBar';
-import { getToken, getSid, resetToken } from './utils/sparcs-sso';
-import client from './utils/api-client';
 import * as types from './store/types';
-
-function appInitCallback() {
-  return new Promise((resolve) => {
-    const token = getToken();
-    const sid = getSid();
-    client.setToken(token);
-    this.setToken({ token: token });
-    if (!!token && !!sid) {
-      this.getUserWithSid({
-        sid: sid,
-      }).then(() => {
-        resolve();
-      }).catch(() => {
-        resetToken();
-        this.setToken({ token: null });
-        client.setToken(null);
-        resolve();
-      });
-    } else {
-      resolve();
-    }
-  });
-}
 
 export default {
   name: 'app',
@@ -49,18 +24,6 @@ export default {
       loggedUser: types.USER_GET_USER,
     }),
   },
-
-  methods: {
-    ...mapMutations({
-      setToken: types.AUTH_SET_TOKEN,
-    }),
-    ...mapActions({
-      getUserWithSid: types.USER_GET_USER_WITH_SID,
-    }),
-  },
-
-  created: appInitCallback,
-
 };
 </script>
 
