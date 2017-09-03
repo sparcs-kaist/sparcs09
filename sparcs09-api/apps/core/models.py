@@ -140,12 +140,11 @@ class Record(models.Model):
     options = models.ManyToManyField(OptionItem)
     quantity = models.IntegerField()
 
+    @property
     def cost(self):
-        price = self.item.price
-        for optItem in self.options.all():
-            price += optItem.price_delta
-
-        return price * self.quantity
+        return (self.payment.item.price + sum(map(
+            lambda x: x.price_delta, self.options.all(),
+        ))) * self.quantity
 
 
 class Payment(models.Model):
@@ -157,14 +156,19 @@ class Payment(models.Model):
         participant: the participated user
         total: total amount to pay - summation of record.cost()
         status: payment status - one of STATUS_CHOICES
+        info: additional message to the host
     """
-    STATUS_PENDING = 0
-    STATUS_JOINED = 1
-    STATUS_PAID = 2
-    STATUS_CONFIRMED = 3
+    STATUS_BANNED = 0
+    STATUS_PENDING = 1
+    STATUS_JOINED = 2
+    STATUS_DISPUTED = 3
+    STATUS_PAID = 4
+    STATUS_CONFIRMED = 5
     STATUS_CHOICES = (
+        (STATUS_BANNED, 'Banned'),
         (STATUS_PENDING, 'Pending'),
         (STATUS_JOINED, 'Joined'),
+        (STATUS_DISPUTED, 'In Disputed'),
         (STATUS_PAID, 'Paid'),
         (STATUS_CONFIRMED, 'Confirmed'),
     )
@@ -172,6 +176,7 @@ class Payment(models.Model):
     participant = models.ForeignKey(User, on_delete=models.CASCADE)
     total = models.IntegerField()
     status = models.IntegerField(choices=STATUS_CHOICES)
+    info = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.participant}: {self.total} for {self.item}'
@@ -193,10 +198,12 @@ class UserLog(models.Model):
     GROUP_ACCOUNT = 'sparcs09.account'
     GROUP_COMMENT = 'sparcs09.comment'
     GROUP_ITEM = 'sparcs09.item'
+    GROUP_PAYMENT = 'sparcs09.payment'
     GROUP_CHOICES = [
         (GROUP_ACCOUNT, GROUP_ACCOUNT),
         (GROUP_COMMENT, GROUP_COMMENT),
         (GROUP_ITEM, GROUP_ITEM),
+        (GROUP_PAYMENT, GROUP_PAYMENT),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              related_name='user_logs', blank=True, null=True)

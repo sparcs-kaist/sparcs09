@@ -26,6 +26,21 @@ class IsItemHostOrReadOnly(IsAuthenticated):
         return obj.host == request.user
 
 
+class IsParticipantOrNone(IsAuthenticated):
+    """
+    Permission check for payments
+    - Allow payment operation for the payment participant
+    - Also allow for the item host
+    """
+    message = (
+        'Payment-related operations are only available to '
+        'the item host and participants'
+    )
+
+    def has_object_permission(self, request, view, obj):
+        return request.user in [obj.item.host, obj.participant]
+
+
 class IsCommentWriterOrReadOnly(IsAuthenticated):
     """ Permission check for comment writer """
     message = 'Deleting others\' comments is not allowed'
