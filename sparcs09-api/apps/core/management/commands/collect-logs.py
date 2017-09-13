@@ -42,7 +42,7 @@ class Command(BaseCommand):
         for log_file in log_files:
             os.remove(self.get_full_path(log_file))
 
-        # remove logs that exceed 30 days
-        last_month = (timezone.now() - timedelta(days=30)) \
+        # remove logs that exceed LOG_MAX_DAYS months
+        last_month = (timezone.now() - timedelta(days=settings.LOG_MAX_DAYS)) \
             .replace(hour=0, minute=0, second=0, microsecond=0)
         UserLog.objects.filter(time__lt=last_month).delete()

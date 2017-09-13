@@ -112,6 +112,7 @@ STATIC_URL = '/static/'
 
 
 # Rest Framework Settings
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
@@ -120,16 +121,21 @@ REST_FRAMEWORK = {
 
 
 # SPARCS SSO Settings
+
 SSO_ID = ''
+
 SSO_KEY = ''
 
 
 # Admins & Logging
+
 ADMINS = (('SPARCS09 SYSOP', '09.sysop@sparcs.org'),)
 
 LOG_DIR = os.path.join(BASE_DIR, 'archive/logs/')
 
 LOG_BUFFER_DIR = os.path.join(BASE_DIR, 'archive/buffer/')
+
+LOG_MAX_DAYS = 180
 
 LOGGING = {
     'version': 1,

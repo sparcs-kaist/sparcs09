@@ -3,10 +3,12 @@ import logging
 from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 
 from apps.core.models import UserLog
+from apps.core.serializers import UserLogSerializer
+from apps.core.utils import get_limit_offset
 from apps.session.serializers import (
     UserFullSerializer, UserProfileUpdateSerializer, UserPublicSerializer,
 )
@@ -17,9 +19,10 @@ logger = logging.getLogger(UserLog.GROUP_ACCOUNT)
 sso_client = Client(settings.SSO_ID, settings.SSO_KEY)
 
 
-class UserViewSet(viewsets.ViewSet):
-    lookup_field = 'sid'
+class UserViewSet(viewsets.ModelViewSet):
+    lookup_field = 'username'
     lookup_value_regex = '[0-9a-f]+'
+    queryset = User.objects.all()
 
     # [GET] /users/
     def list(self, request):
@@ -33,16 +36,11 @@ class UserViewSet(viewsets.ViewSet):
             'detail': 'Creating user is not allowed.',
         }, status=403)
 
-    # [GET] /users/<sid>/
-    def retrieve(self, request, sid=None):
-        user = User.objects.filter(username=sid).first()
-        if not user:
-            return Response({
-                'detail': 'No such user.',
-            }, status=404)
-
+    # [GET] /users/<username>/
+    def retrieve(self, request, username=None):
+        user = self.get_object()
         serializer_class = UserPublicSerializer
-        if request.user.username == sid:
+        if request.user == user:
             serializer_class = UserFullSerializer
 
         serializer = serializer_class(user)
@@ -50,20 +48,16 @@ class UserViewSet(viewsets.ViewSet):
             'user': serializer.data,
         })
 
-    # [PUT] /users/<sid>/
-    def update(self, request, sid=None):
+    # [PUT] /users/<username>/
+    def update(self, request, username=None):
         return Response({
             'detail': 'Updating user is not allowed. Use PATCH',
         }, status=403)
 
-    # [PATCH] /users/<sid>/
-    def partial_update(self, request, sid=None):
-        user = User.objects.filter(username=sid).first()
-        if not user:
-            return Response({
-                'detail': 'No such user.',
-            }, status=404)
-        elif request.user.username != sid:
+    # [PATCH] /users/<username>/
+    def partial_update(self, request, username=None):
+        user = self.get_object()
+        if request.user != user:
             return Response({
                 'detail': 'Updating others profile is forbidden.',
             }, status=403)
@@ -81,14 +75,14 @@ class UserViewSet(viewsets.ViewSet):
 
         logger.info('update', {
             'r': request,
-            'extra': {'sid': sid, **request.data},
+            'extra': {**serializer.validated_data},
         })
         return Response({
             'user': serializer.data,
         })
 
-    # [DELETE] /users/<sid>/
-    def destroy(self, request, sid=None):
+    # [DELETE] /users/<username>/
+    def destroy(self, request, username=None):
         return Response({
             'detail': 'Deleting user is not allowed.',
         }, status=403)
@@ -131,4 +125,25 @@ class UserViewSet(viewsets.ViewSet):
         })
         return Response({
             'success': True,
+        })
+
+    # [GET] /users/<username>/logs/
+    @detail_route(methods=['get'])
+    def logs(self, request, username=None):
+        user = self.get_object()
+        if request.user != user:
+            return Response({
+                'detail': 'Retrieving others logs is not allowed',
+            })
+
+        limit, offset = get_limit_offset(request.GET)
+        group = request.GET.get('group', '')
+        logs = UserLog.objects.filter(user=user, is_hidden=False)
+        if group:
+            logs = logs.filter(group=group)
+        logs = logs.order_by('-time')[offset:offset+limit]
+
+        serializer = UserLogSerializer(logs, many=True)
+        return Response({
+            'logs': serializer.data,
         })

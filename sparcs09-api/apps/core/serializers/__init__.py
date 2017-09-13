@@ -7,3 +7,4 @@ from .option_item import OptionItemSerializer  # noqa: F401
 from .payment import (  # noqa: F401
     PaymentCreateSerializer, PaymentSerializer, PaymentUpdateSerializer,
 )
+from .user_log import UserLogSerializer  # noqa: F401
