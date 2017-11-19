@@ -1,20 +1,23 @@
 import logging
 
-from rest_framework import viewsets
+from django.utils import timezone
+from rest_framework import status, viewsets
 from rest_framework.decorators import detail_route
+from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 
 from apps.core.models import Item, Payment, UserLog
 from apps.core.permissions import IsItemHostOrReadOnly
 from apps.core.serializers import (
     CommentCreateSerializer, CommentFullSerializer, CommentSerializer,
-    ItemSerializer,
+    ItemCreateSerializer, ItemSerializer, ItemUpdateSerializer,
     PaymentCreateSerializer, PaymentSerializer,
 )
-from apps.core.utils import get_limit_offset
+from apps.core.utils import get_limit_offset, to_int
 
 
 logger = logging.getLogger(UserLog.GROUP_ITEM)
+logger_item = logging.getLogger(UserLog.GROUP_ITEM)
 logger_comment = logging.getLogger(UserLog.GROUP_COMMENT)
 logger_payment = logging.getLogger(UserLog.GROUP_PAYMENT)
 
@@ -25,29 +28,166 @@ class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
     permission_classes = [IsItemHostOrReadOnly]
 
+    def get_queryset_for_list(self):
+        limit, offset = get_limit_offset(self.request.query_params)
+        status = to_int(self.request.query_params.get('status', ''), 0)
+        if status == 0:
+            return Item.objects.filter(is_deleted=False)[offset:offset+limit]
+
+        sid = self.request.query_params.get('sid', '')
+
+        if status > 128 or status < 0:
+            raise ParseError('Wrong status number')
+
+        # status except 2 requires sid
+        if status & 0b111101 != 0 and sid == '':
+            raise ParseError('sid is required')
+
+        queryset = Item.objects.none()
+
+        # 1 - Not joined and Opened
+        if status & 1:
+            item_ids = (Payment.objects.filter(participant__username=sid)
+                        .values_list('item', flat=True)
+                        )
+            query_1 = Item.objects.exclude(id__in=item_ids).filter(join_type=0)
+            queryset |= query_1
+
+        # 2 - Closed
+        if status & 2:
+            query_2 = Item.objects.filter(join_type=1)
+            queryset |= query_2
+
+        # 4 - Banned
+        # 8 - Pending
+        # 16 - Joined
+        # 32 - Disputed
+        # 64 - Paid
+        # 128 - Confirmed
+        for i in range(6):
+            if status & (2 ** (i+2)):
+                item_ids = (Payment.objects.filter(participant__username=sid,
+                                                   status=i)
+                            .values_list('item', flat=True)
+                            )
+                query_item = Item.objects.filter(id__in=item_ids)
+                queryset |= query_item
+
+        print(queryset)
+        queryset = queryset.filter(is_deleted=False)
+        print(queryset)
+
+        return queryset[offset:offset+limit]
+
     # [GET] /items/
     def list(self, request):
-        pass
+        queryset = self.get_queryset_for_list()
+        serializer = ItemSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     # [POST] /items/
     def create(self, request):
-        pass
+        data = request.data
+        serializer = ItemCreateSerializer(data=data, context={
+            'host': request.user}
+        )
+
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            item = serializer.save()
+
+        serializer_read = ItemSerializer(item)
+
+        logger_item.info('create', {
+            'r': request,
+            'extra': {
+                **serializer_read.data,
+            },
+        })
+
+        return Response(serializer_read.data, status=status.HTTP_201_CREATED)
 
     # [GET] /items/<pk>/
     def retrieve(self, request, pk=None):
-        pass
+        item = self.get_object()
+        if item.is_deleted:
+            return Response({
+                'detail': 'This item is deleted'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ItemSerializer(item)
+        return Response(serializer.data)
 
     # [PUT] /items/<pk>/
     def update(self, request, pk=None):
-        pass
+        return Response({
+            'detail': 'Method update to item is not allowed.',
+        }, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     # [PATCH] /items/<pk>/
     def partial_update(self, request, pk=None):
-        pass
+        item = self.get_object()
+        serializer = ItemUpdateSerializer(item, data=request.data,
+                                          partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            item = serializer.save()
+
+        serializer_read = ItemSerializer(item)
+
+        logger_item.info('update', {
+            'r': request,
+            'extra': {
+                **serializer_read.data,
+            },
+        })
+
+        return Response(serializer_read.data, status=status.HTTP_200_OK)
 
     # [DELETE] /items/<pk>/
     def destroy(self, request, pk=None):
-        pass
+        item = self.get_object()
+
+        if Payment.objects.filter(id=item.id).exists():
+            return Response({
+                'detail': 'Item cannot be deleted if payment exists.',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if item.is_deleted:
+            return Response({
+                'detail': 'This item is alreay deleted.',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        item.is_deleted = True
+        item.save()
+
+        logger_item.info('delete', {
+            'r': request,
+            'extra': {
+                'item': pk
+            },
+        })
+        return Response(status=status.HTTP_200_OK)
+
+    # [PATCH] /items/<pk>/
+    @detail_route(methods=['patch'])
+    def close(self, request, pk=None):
+        item = self.get_object()
+        item.deadline = timezone.now()
+        item.save()
+
+        logger_item.info('close', {
+            'r': request,
+            'extra': {
+                'item': pk
+            },
+        })
+
+        return Response(status=status.HTTP_200_OK)
 
     # [GET, POST] /items/<pk>/payments/
     @detail_route(methods=['get', 'post'])

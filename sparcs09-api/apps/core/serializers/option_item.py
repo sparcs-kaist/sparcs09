@@ -8,3 +8,9 @@ class OptionItemSerializer(serializers.ModelSerializer):
         model = OptionItem
         fields = ['id', 'name', 'price_delta']
         read_only_fields = fields
+
+
+class OptionItemCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OptionItem
+        fields = ['name', 'price_delta']
