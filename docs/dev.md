@@ -18,34 +18,34 @@ By default, `[WEB_PORT]` and `[API_PORT]` are set as `8080` and `8000` by the fr
  - Unregister URL: http://localhost:[WEB_PORT]/api/users/unregister (NOT implemented yet)
 
 ## Web (Vue.js)
-- config/index.js:
+- nuxt.config.js
 
 ```javascript
-module.exports = {
-  ...
-  dev: {
-    ...
-    port: [WEB_PORT],
-    ...
-    proxyTable: {
-      "/api": {
-        target: "http://localhost:[API_PORT]/api",
+  proxy: [
+    [
+      '/api',
+      {
+        target: 'http://localhost:[API_PORT]/api',
+        changeOrigin: true,
+        pathRewrite: { '^/api': '' },
         ...
-      }
-    }
-  }
-}
+      },
+      ...
+    ]
+  ],
+
+  env: {
+    SPARCS_SSO_DOMAIN: 'https://sparcssso.kaist.ac.kr',
+    SPARCS_SSO_API_PREFIX: 'api',
+    SPARCS_SSO_DOMAIN_VERSION: 'v2',
+    SPARCS_SSO_CLIENT_ID: '',       // Enter Client Id for your SPARCS SSO test service
+    SPARCS09_API_DOMAIN: 'http://localhost:[WEB_PORT]/api'
+  },
 ```
 
-- config/dev.env.js
+**Change host and port**
 
-```javascript
-module.export = merge(prodEnv, {
-  NODE_ENV: '"development"',
-  SSO_CLIENT_ID: '""',            // Enter Client Id for your SPARCS SSO test service
-  SPARCS09_API_DOMAIN: '"http://127.0.0.1:[WEB_PORT]/api/"',
-}
-```
+  - See nuxt.js document https://ko.nuxtjs.org/faq/host-port/
 
 **Install NPM Dependencies**
 
