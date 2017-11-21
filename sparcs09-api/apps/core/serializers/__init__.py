@@ -13,4 +13,7 @@ from .option_item import (  # noqa: F401
 from .payment import (  # noqa: F401
     PaymentCreateSerializer, PaymentSerializer, PaymentUpdateSerializer,
 )
+from .content import (  # noqa: F401
+    ContentCreateSerializer, ContentSerializer, ContentUpdateSerializer,
+)
 from .user_log import UserLogSerializer  # noqa: F401

@@ -3,3 +3,4 @@
 # Vim swap files
 *.sw[op]
 
+.vscode/settings.json

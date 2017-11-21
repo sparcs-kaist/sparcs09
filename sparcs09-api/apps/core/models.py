@@ -30,6 +30,8 @@ class Item(models.Model):
                                   null=True, blank=True)
     host = models.ForeignKey(User, related_name='items')
     price = models.IntegerField()
+    payment_method = models.CharField(max_length=100,
+                                      null=True, blank=True)
     join_type = models.IntegerField(choices=JOIN_TYPE_CHOICES)
     created_date = models.DateTimeField()
     deadline = models.DateTimeField()

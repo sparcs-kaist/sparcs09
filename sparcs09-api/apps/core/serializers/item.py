@@ -16,8 +16,8 @@ class ItemCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['title', 'description', 'thumbnail', 'price',
-                  'join_type', 'deadline', 'delivery_date',
-                  'option_categories']
+                  'payment_method', 'join_type', 'deadline',
+                  'delivery_date', 'option_categories']
 
     def create(self, validated_data):
         categories = validated_data.pop('option_categories')
@@ -62,7 +62,7 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['id', 'title', 'description', 'thumbnail', 'host', 'price',
-                  'join_type', 'created_date', 'deadline',
+                  'payment_method', 'join_type', 'created_date', 'deadline',
                   'delivery_date', 'is_deleted', 'option_categories']
         read_only_fields = fields
 
@@ -73,8 +73,8 @@ class ItemUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['title', 'description', 'thumbnail', 'price',
-                  'join_type', 'deadline', 'delivery_date',
-                  'option_categories']
+                  'payment_method', 'join_type', 'deadline',
+                  'delivery_date', 'option_categories']
 
     def update(self, instance, validated_data):
         categories = validated_data.pop('option_categories', None)

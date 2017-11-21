@@ -6,10 +6,11 @@ from rest_framework.decorators import detail_route
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 
-from apps.core.models import Item, Payment, UserLog
+from apps.core.models import Content, Item, Payment, UserLog
 from apps.core.permissions import IsItemHostOrReadOnly
 from apps.core.serializers import (
     CommentCreateSerializer, CommentFullSerializer, CommentSerializer,
+    ContentCreateSerializer, ContentSerializer,
     ItemCreateSerializer, ItemSerializer, ItemUpdateSerializer,
     PaymentCreateSerializer, PaymentSerializer,
 )
@@ -188,6 +189,39 @@ class ItemViewSet(viewsets.ModelViewSet):
         })
 
         return Response(status=status.HTTP_200_OK)
+
+    # [GET, POST] /items/<pk>/contents/
+    @detail_route(methods=['get', 'post'])
+    def contents(self, request, pk=None):
+        item = self.get_object()
+        return {
+            'GET': self.contents_get,
+            'POST': self.contents_post,
+        }[request.method](request, item)
+
+    def contents_get(self, request, item):
+        payload = {
+            'contents': [],
+        }
+        contents = Content.objects.filter(item=item).order_by('order')
+        payload['contents'] = [ContentSerializer(c).data for c in contents]
+        return Response(payload)
+
+    def contents_post(self, request, item):
+        serializer = ContentCreateSerializer(data=request.data, context={
+          'item': item,
+        })
+        if not serializer.is_valid():
+            return Response({
+                'detail': 'Not valid data',
+                'errors': serializer.errors,
+            }, status=400)
+        content = serializer.save()
+
+        serializer_read = ContentSerializer(content)
+        return Response({
+            'content': serializer_read.data,
+        })
 
     # [GET, POST] /items/<pk>/payments/
     @detail_route(methods=['get', 'post'])
