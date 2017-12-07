@@ -7,6 +7,7 @@ from apps.core.serializers.option_category import (
     OptionCategoryCreateSerializer, OptionCategorySerializer,
 )
 from apps.session.serializers import UserPublicSerializer
+from apps.session.serializers import UserFullSerializer
 
 
 class ItemCreateSerializer(serializers.ModelSerializer):
@@ -56,7 +57,7 @@ class ItemCreateSerializer(serializers.ModelSerializer):
 
 
 class ItemSerializer(serializers.ModelSerializer):
-    host = UserPublicSerializer()
+    host = UserFullSerializer()
     option_categories = OptionCategorySerializer(many=True)
 
     class Meta:

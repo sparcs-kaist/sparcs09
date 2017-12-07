@@ -30,7 +30,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.user.first_name = validated_data.pop('user', {}).pop(
-            'name', instance.user.first_name
+            'first_name', instance.user.first_name
         )
         instance.user.save()
         return super().update(instance, validated_data)
