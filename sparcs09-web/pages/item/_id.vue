@@ -31,8 +31,8 @@
       <section class="section">
         <div class="container">
           <h2 class="title is-2">댓글</h2>
-          <comment-form :callback="addComment"></comment-form>
-          <comment-view v-for="(comment, i) in comments" :key="i" :data="comment" :callback="removeComment"></comment-view>
+          <comment-form v-if="user != null" :user="user" :callback="addComment"></comment-form>
+          <comment-view v-for="(comment, i) in comments.comments" :key="comment.id" :index="i" :comment="comment" :callback="deleteComment"></comment-view>
         </div>
       </section>
     </div>
@@ -40,6 +40,8 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex';
+
   import ItemView from '~/components/views/ItemView.vue';
   import ItemContentView from '~/components/views/ItemContentView.vue';
   import HostView from '~/components/views/HostView.vue';
@@ -51,19 +53,64 @@
   import client from '../../utils/api-client';
 
   async function getItemWithId(id) {
-    const response = await client.request({
-      method: 'get',
-      url: `items/${id}/`,
-    });
-    return response.data;
+    try {
+      const response = await client.request({
+        method: 'get',
+        url: `items/${id}/`,
+      });
+      return response.data;
+    } catch (e) {
+      throw e;
+    }
   }
 
   async function getContentsWithItemId(itemId) {
-    const response = await client.request({
-      method: 'get',
-      url: `items/${itemId}/contents`,
-    });
-    return response.data.contents;
+    try {
+      const response = await client.request({
+        method: 'get',
+        url: `items/${itemId}/contents`,
+      });
+      return response.data.contents;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async function getCommentsOfItem(itemId) {
+    try {
+      const response = await client.request({
+        method: 'get',
+        url: `items/${itemId}/comments`,
+      });
+      return response.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async function addCommentToItem(itemId, comment) {
+    try {
+      const response = await client.request({
+        method: 'post',
+        url: `items/${itemId}/comments/`,
+        data: comment,
+      });
+      return response.data.comment;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async function deleteCommentWithId(commentId) {
+    try {
+      const response = await client.request({
+        method: 'delete',
+        url: `comments/${commentId}`,
+      });
+      return response.data;
+    } catch (e) {
+      throw e;
+    }
   }
 
   export default {
@@ -81,8 +128,14 @@
       return {
         item: null,
         records: [],
-        comments: [],
+        comments: null, // comments === { count: int, comments: arr }
       };
+    },
+
+    computed: {
+      ...mapGetters({
+        user: 'user/getUser',
+      }),
     },
 
     async asyncData({ params, error }) {
@@ -90,12 +143,14 @@
         const item = await getItemWithId(params.id);
         const contents = await getContentsWithItemId(params.id);
         item.contents = contents;
+        const comments = await getCommentsOfItem(params.id);
         return {
           item,
+          comments,
         };
       } catch (e) {
-        console.log(e);
-        error({ statusCode: params.statusCode, message: 'Error occurred' });
+        alert(e.response);
+        error({ statusCode: e.response.status, message: e.response.statusText });
         return null;
       }
     },
@@ -111,18 +166,27 @@
         // remove option object to page.
         this.records.splice(recordIndex, 1);
       },
-      addComment(comment) {
-        const commentCopy = JSON.parse(JSON.stringify(comment));
-        comment.content = '';
-        this.comments.push(commentCopy);
+      async addComment(comment) {
+        try {
+          const resComment = await addCommentToItem(this.item.id, { content: comment.content });
+          comment.content = '';
+          this.comments.comments.push(resComment);
+        } catch (e) {
+          alert(e.response);
+        }
       },
-      removeComment(commentIndex) {
-        this.comments.splice(commentIndex, 1);
+      async deleteComment(comment) {
+        try {
+          await deleteCommentWithId(comment.id);
+          comment.content = 'DELETED';
+        } catch (e) {
+          alert(e.response);
+        }
       },
     },
 
     head: {
-      title: 'iPhone X 공동구매',
+      title: 'SPARCS 09',
     },
   };
 </script>

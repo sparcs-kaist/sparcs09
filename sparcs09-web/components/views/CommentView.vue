@@ -1,11 +1,11 @@
 <template>
   <article class="media">
     <figure class="media-left">
-      <p>김슈타인: </p>
+      <p>{{comment.writer.name}}: </p>
     </figure>
     <div class="media-content">
-      {{data.content}}
-      <a class="button is-primary" @click="callback(data)">삭제</a>
+      {{comment.content}}
+      <a class="button is-primary" @click="callback(comment)">삭제</a>
     </div>
   </article>
 </template>
@@ -18,7 +18,11 @@ export default {
     };
   },
   props: {
-    data: {
+    index: {
+      type: Number,
+      required: true,
+    },
+    comment: {
       type: Object,
       required: true,
     },

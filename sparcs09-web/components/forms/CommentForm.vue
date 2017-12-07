@@ -1,7 +1,7 @@
 <template>
   <article class="media">
     <figure class="media-left">
-      <p>김슈타인: </p>
+      <p>{{user.name}}: </p>
     </figure>
     <div class="media-content">
       <textarea class="textarea" v-model="comment_input.content" placeholder="댓글을 작성하세요"></textarea>
@@ -26,6 +26,10 @@ export default {
     };
   },
   props: {
+    user: {
+      type: Object,
+      required: true,
+    },
     callback: {
       type: Function,
       required: true,

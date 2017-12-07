@@ -6,7 +6,6 @@ from apps.core.models import Item, OptionCategory, OptionItem, Payment
 from apps.core.serializers.option_category import (
     OptionCategoryCreateSerializer, OptionCategorySerializer,
 )
-from apps.session.serializers import UserPublicSerializer
 from apps.session.serializers import UserFullSerializer
 
 
