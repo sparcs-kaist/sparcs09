@@ -29,8 +29,8 @@
         </div>
       </section>
       <section class="section">
-        <div class="container">
-          <h2 class="title is-2">댓글</h2>
+        <div class="container" @scroll="handleScroll">
+          <h2 class="title is-2">댓글 ({{comments.count}})</h2>
           <comment-form v-if="user != null" :user="user" :callback="addComment"></comment-form>
           <comment-view v-for="(comment, i) in comments.comments" :key="comment.id" :index="i" :comment="comment" :callback="deleteComment"></comment-view>
         </div>
@@ -76,17 +76,18 @@
     }
   }
 
-  async function getCommentsOfItem(itemId) {
+  async function getCommentsOfItem(itemId, offset) {
     try {
       const response = await client.request({
         method: 'get',
-        url: `items/${itemId}/comments`,
+        url: `items/${itemId}/comments?offset=${offset}&sort=-created_date`,
       });
       return response.data;
     } catch (e) {
       throw e;
     }
   }
+
 
   async function addCommentToItem(itemId, comment) {
     try {
@@ -128,7 +129,7 @@
       return {
         item: null,
         records: [],
-        comments: null, // comments === { count: int, comments: arr }
+        comments: { count: 0, comments: [] },
       };
     },
 
@@ -143,7 +144,7 @@
         const item = await getItemWithId(params.id);
         const contents = await getContentsWithItemId(params.id);
         item.contents = contents;
-        const comments = await getCommentsOfItem(params.id);
+        const comments = await getCommentsOfItem(params.id, 0);
         return {
           item,
           comments,
@@ -156,6 +157,13 @@
     },
 
     methods: {
+      async handleScroll() {
+        if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
+          // fetch older 10 comments
+          const older = await getCommentsOfItem(this.item.id, this.comments.comments.length);
+          this.comments.comments = this.comments.comments.concat(older.comments);
+        }
+      },
       addRecord(record) {
         // add option object to page.
         const recordCopy = JSON.parse(JSON.stringify(record));
@@ -170,7 +178,8 @@
         try {
           const resComment = await addCommentToItem(this.item.id, { content: comment.content });
           comment.content = '';
-          this.comments.comments.push(resComment);
+          this.comments.comments.unshift(resComment);
+          this.comments.count += 1;
         } catch (e) {
           alert(e.response);
         }
@@ -183,6 +192,14 @@
           alert(e.response);
         }
       },
+    },
+
+    created() {
+      window.addEventListener('scroll', this.handleScroll);
+    },
+
+    destroyed() {
+      window.removeEventListener('scroll', this.handleScroll);
     },
 
     head: {

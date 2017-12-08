@@ -4,3 +4,4 @@
 *.sw[op]
 
 .vscode/settings.json
+.vscode/tags

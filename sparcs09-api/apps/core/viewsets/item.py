@@ -297,9 +297,10 @@ class ItemViewSet(viewsets.ModelViewSet):
     # [GET] /items/<pk>/comments/
     def comments_get(self, request, item):
         limit, offset = get_limit_offset(request.GET)
+        sort_opt = request.GET.get('sort', 'id')
 
         response = []
-        comments = item.comments.order_by('id')[offset:offset+limit]
+        comments = item.comments.order_by(sort_opt)[offset:offset+limit]
         for comment in comments:
             serializer_class = CommentSerializer
             if request.user in [comment.writer, item.host]:
