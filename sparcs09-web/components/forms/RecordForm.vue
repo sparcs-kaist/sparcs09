@@ -7,7 +7,7 @@
         </div>
         <div class="level-item">
           <div class="select">
-            <select v-model="record_input.option_items[i]">
+            <select v-model="option_items[i]">
               <option selected disabled value="record_input.option_items[i]">{{option_category.name}} 선택</option>
               <option v-for="item in option_category.items" :key="item.id" :value="item">{{item.name}} (+ {{item.price_delta}} 원)</option>
             </select>
@@ -24,7 +24,7 @@
           <a class="button" @click="increaseQuantity()"> + </a>
         </div>
         <div class="level-item">
-          {{record_input.quantity}}
+          {{quantity}}
         </div>
         <div class="level-item">
           <a class="button" @click="decreaseQuantity()"> - </a>
@@ -44,11 +44,13 @@ export default {
     // iterate through option_categories
     // put true if category is required, false if not.
     return {
-      record_input: {
-        option_items: this.option_categories.map(x => x.required),
-        quantity: 0,
-      },
+      quantity: 0,
     };
+  },
+  computed: {
+    option_items() {
+      return this.option_categories.map(x => x.required);
+    },
   },
   props: {
     callback: {
@@ -62,17 +64,20 @@ export default {
   },
   methods: {
     increaseQuantity() {
-      this.record_input.quantity += 1;
+      this.quantity += 1;
     },
     decreaseQuantity() {
-      if (this.record_input.quantity > 0) {
-        this.record_input.quantity -= 1;
+      if (this.quantity > 0) {
+        this.quantity -= 1;
       }
     },
     submitButtonListener() {
       // remove -1's
       // check all the required option selected.
-      const rec = this.record_input;
+      const rec = {
+        option_items: this.option_items,
+        quantity: this.quantity,
+      };
       if (rec.option_items.indexOf(true) === -1 && rec.quantity > 0) {
         // remove false elements and call callback function.
         rec.option_items = rec.option_items.filter(x => (x !== false));
